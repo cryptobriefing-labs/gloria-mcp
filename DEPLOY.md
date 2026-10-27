@@ -76,18 +76,14 @@ to prove the service is alive, or a green run tells you nothing about production
 
 ### Why the install is conditional
 
-`requirements.txt` pins **floors**, not versions:
+`requirements.txt` is an **exact lock** of every runtime package (since
+2026-10-27, see `docs/security/dependency-remediation-2026-10-27/`). It used to
+pin floors only (`mcp[cli]>=1.26.0`). A fresh install of those floors resolves
+`mcp` 2.x, which removes `mcp.server.fastmcp`, and the server then fails to
+import. `mcp` is now held on the 1.x line.
 
-```
-mcp[cli]>=1.26.0
-httpx>=0.27.0
-python-dotenv>=1.0.0
-```
-
-So every `pip install -r requirements.txt` is an opportunity to silently upgrade
-a dependency underneath a running production service. Running it only when the
-file changes bounds that exposure. **Pinning exact versions is the real fix and
-is a follow-up, not part of this pipeline.**
+The install still runs only when the file changes. A dependency change is a
+reviewed edit to `requirements.txt`, and it restarts the service.
 
 The install is deliberately `pip install -r requirements.txt` and **never**
 `pip install .` or `pip install -e .`. The unit runs the source tree directly via

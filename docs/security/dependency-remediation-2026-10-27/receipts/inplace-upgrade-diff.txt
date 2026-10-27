@@ -1,0 +1,16 @@
+8c8
+< cryptography==46.0.5
+---
+> cryptography==50.0.2
+18c18
+< mcp==1.26.0
+---
+> mcp==1.30.0
+26c26
+< PyJWT==2.11.0
+---
+> PyJWT==2.15.1
+35c35
+< starlette==0.52.1
+---
+> starlette==1.7.0
