@@ -1,0 +1,12 @@
+FAIL health-check handshake (Host: localhost) returns 200 with serverInfo and protocolVersion  [HTTP 0]
+FAIL serverInfo names Gloria AI
+FAIL Host: mcp.itsgloria.ai (nginx proxy_set_header Host $host) is accepted  [HTTP 0]
+FAIL Host: 127.0.0.1:<port> is rejected with 421, as DEPLOY.md documents  [HTTP 0]
+FAIL an unknown Host is rejected with 421 (DNS rebinding protection)  [HTTP 0]
+FAIL client run completed without an exception  [ExceptionGroup('unhandled errors in a TaskGroup', [ExceptionGroup('unhandled errors in a TaskGroup', [MCPError(-32000, 'Connection closed', None)])])]
+FAIL server process still alive after the HTTP run
+FAIL streamable-http session idle timeout and session cap are set (GHSA-84m7-p3x7-pcfv)  [{}]
+FAIL server log has no Traceback  [med 'mcp.server.fastmcp'. This is mcp 2.x, where FastMCP was renamed to MCPServer (from mcp.server.mcpserver import MCPServer) and other APIs changed; see the migration guide at https://py.sdk.modelcontextprotocol.io/v2/migration/#fastmcp-renamed-to-mcpserver or pin 'mcp<2' to keep running v1 code.
+PASS no non-loopback connection was attempted by the server
+FAIL every fake ai-hub request carried the token  [0 requests]
+{"python": "3.10.22", "passed": 1, "failed": 10, "denied_connects": [], "server_info": "", "versions": {"mcp": "2.3.0", "starlette": "1.7.0", "sse-starlette": "3.5.1", "uvicorn": "0.54.0", "PyJWT": "2.15.1", "cryptography": "50.0.2", "httpx": "0.28.1", "anyio": "4.15.1", "pydantic": "2.14.1", "python-multipart": "0.0.32", "python-dotenv": "1.2.4"}}

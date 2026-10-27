@@ -1,0 +1,42 @@
+PASS health-check handshake (Host: localhost) returns 200 with serverInfo and protocolVersion  [HTTP 200]
+PASS serverInfo names Gloria AI  [{"name": "Gloria AI", "version": "1.30.0"}]
+PASS Host: mcp.itsgloria.ai (nginx proxy_set_header Host $host) is accepted  [HTTP 200]
+PASS Host: 127.0.0.1:<port> is rejected with 421, as DEPLOY.md documents  [HTTP 421]
+PASS an unknown Host is rejected with 421 (DNS rebinding protection)  [HTTP 421]
+PASS streamable-http: MCP client initialize  [protocol 2025-11-25, server 1.30.0]
+PASS streamable-http: the server issued a session id
+PASS streamable-http: tools/list returns the seven tools  [get_categories,get_enriched_news,get_latest_news,get_news_item,get_news_recap,get_ticker_summary,search_news]
+PASS streamable-http: get_latest_news clamps limit to 10 and filters by category  [{"limit": "10", "page": "1", "feed_categories": "bitcoin", "token": "fake-cdae1a53af87"}]
+PASS streamable-http: free tier strips long_context and short_context
+PASS streamable-http: search_news clamps limit to 5 and sends keyword  [{"limit": "5", "page": "1", "keyword": "ETF", "token": "fake-cdae1a53af87"}]
+PASS streamable-http: get_news_item returns the free-tier item  [{"id": "n-1", "signal": "headline SENTINEL-b03ea4df", "sentiment": "positive", "sentiment_value": 0.7, "timestamp": "202]
+PASS streamable-http: get_news_item on a 404 returns an error object  [{"error": "News item 'nope' not found."}]
+PASS streamable-http: get_news_recap passes category and timeframe  [{"feed_category": "bitcoin", "timeframe": "8h", "token": "fake-cdae1a53af87"}]
+PASS streamable-http: get_news_recap on a 404 returns an error object
+PASS streamable-http: get_categories returns the hub list
+PASS streamable-http: get_enriched_news returns x402 payment instructions only
+PASS streamable-http: get_ticker_summary returns x402 payment instructions only
+PASS streamable-http: resources/list returns gloria://about and gloria://categories  [gloria://about,gloria://categories]
+PASS streamable-http: resources/read gloria://about
+PASS streamable-http: resources/read gloria://categories renders hub categories  [Available Gloria AI news categories: |  | - bitcoin: Bitcoin (recaps every 8h) | - ai: AI (no recaps)]
+PASS stdio: MCP client initialize
+PASS stdio: tools/list returns the seven tools  [get_categories,get_enriched_news,get_latest_news,get_news_item,get_news_recap,get_ticker_summary,search_news]
+PASS stdio: get_latest_news clamps limit to 10 and filters by category  [{"limit": "10", "page": "1", "feed_categories": "bitcoin", "token": "fake-cdae1a53af87"}]
+PASS stdio: free tier strips long_context and short_context
+PASS stdio: search_news clamps limit to 5 and sends keyword  [{"limit": "5", "page": "1", "keyword": "ETF", "token": "fake-cdae1a53af87"}]
+PASS stdio: get_news_item returns the free-tier item  [{"id": "n-1", "signal": "headline SENTINEL-b03ea4df", "sentiment": "positive", "sentiment_value": 0.7, "timestamp": "202]
+PASS stdio: get_news_item on a 404 returns an error object  [{"error": "News item 'nope' not found."}]
+PASS stdio: get_news_recap passes category and timeframe  [{"feed_category": "bitcoin", "timeframe": "8h", "token": "fake-cdae1a53af87"}]
+PASS stdio: get_news_recap on a 404 returns an error object
+PASS stdio: get_categories returns the hub list
+PASS stdio: get_enriched_news returns x402 payment instructions only
+PASS stdio: get_ticker_summary returns x402 payment instructions only
+PASS stdio: resources/list returns gloria://about and gloria://categories  [gloria://about,gloria://categories]
+PASS stdio: resources/read gloria://about
+PASS stdio: resources/read gloria://categories renders hub categories  [Available Gloria AI news categories: |  | - bitcoin: Bitcoin (recaps every 8h) | - ai: AI (no recaps)]
+PASS server process still alive after the HTTP run
+PASS streamable-http session idle timeout and session cap are set (GHSA-84m7-p3x7-pcfv)  [{"session_idle_timeout": 1800.0, "max_sessions": 10000}]
+PASS server log has no Traceback
+PASS no non-loopback connection was attempted by the server
+PASS every fake ai-hub request carried the token  [16 requests]
+{"python": "3.10.22", "passed": 41, "failed": 0, "denied_connects": [], "server_info": "{\"name\": \"Gloria AI\", \"version\": \"1.30.0\"}", "versions": {"mcp": "1.30.0", "starlette": "1.7.0", "sse-starlette": "3.5.1", "uvicorn": "0.54.0", "PyJWT": "2.15.1", "cryptography": "50.0.2", "httpx": "0.28.1", "anyio": "4.15.1", "pydantic": "2.14.1", "python-multipart": "0.0.32", "python-dotenv": "1.2.4"}}
