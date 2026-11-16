@@ -68,5 +68,31 @@ uv run gloria-mcp
 
 | Variable | Required | Default |
 |----------|----------|---------|
-| `GLORIA_API_TOKEN` | Yes | — |
+| `GLORIA_API_TOKEN` | Yes | (none) |
 | `AI_HUB_BASE_URL` | No | `https://ai-hub.cryptobriefing.com` |
+
+### Token requirements
+
+`GLORIA_API_TOKEN` must be an ai-hub token with the `reader` role. The server
+calls only these four read-only routes, and a reader token allows nothing else:
+
+| Route | Used by |
+|-------|---------|
+| `GET /news` | `get_latest_news`, `search_news` |
+| `GET /news/{id}` | `get_news_item` |
+| `GET /recaps` | `get_news_recap` |
+| `GET /available-feed-categories` | `get_categories`, `gloria://categories` |
+
+Do not use a token with broader roles.
+
+The token is sent only in the `Authorization: Bearer` header, never in a URL.
+Upstream failures reach the MCP caller as a generic message such as
+`Upstream request failed (status 403)`, with no URL, header or upstream body.
+Ids, categories and timeframes are validated before any request is sent.
+
+## Tests
+
+```bash
+pip install -r requirements.txt pytest
+PYTHONPATH=src pytest -q tests
+```

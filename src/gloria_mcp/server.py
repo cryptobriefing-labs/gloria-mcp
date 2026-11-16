@@ -1,12 +1,15 @@
 """Gloria AI MCP Server — curated crypto news for AI agents."""
 
+import functools
+import logging
 import os
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp.exceptions import ToolError
 from mcp.server.fastmcp.server import TransportSecuritySettings
 
-from gloria_mcp.client import GloriaClient
+from gloria_mcp.client import GloriaClient, GloriaClientError
 from gloria_mcp.models import (
     enriched_news_payment_info,
     format_recap,
@@ -28,12 +31,39 @@ mcp = FastMCP(
     ),
 )
 
+logger = logging.getLogger("gloria_mcp.server")
+
 _client: GloriaClient | None = None
+
+
+def _safe_tool(fn):
+    """Return only safe error text to the MCP caller.
+
+    GloriaClientError messages are written to be caller-safe (no URL, header,
+    token or upstream body). Any other exception is logged server side and
+    replaced with a generic message, so an unexpected error can never echo
+    internal details back to the caller.
+    """
+
+    @functools.wraps(fn)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await fn(*args, **kwargs)
+        except GloriaClientError as exc:
+            raise ToolError(str(exc)) from None
+        except ToolError:
+            raise
+        except Exception as exc:
+            logger.error("tool %s failed: %s", fn.__name__, type(exc).__name__)
+            raise ToolError("Internal error") from None
+
+    return wrapper
 
 
 def _get_client() -> GloriaClient:
     global _client
     if _client is None:
+        # Must be an ai-hub "reader" role token. See README.md and DEPLOY.md.
         token = os.environ.get("GLORIA_API_TOKEN", "")
         base_url = os.environ.get("AI_HUB_BASE_URL", "https://ai-hub.cryptobriefing.com")
         if not token:
@@ -48,6 +78,7 @@ def _get_client() -> GloriaClient:
 
 
 @mcp.tool()
+@_safe_tool
 async def get_latest_news(category: str | None = None, limit: int = 5) -> list[dict]:
     """Get the latest curated crypto news headlines.
 
@@ -60,12 +91,14 @@ async def get_latest_news(category: str | None = None, limit: int = 5) -> list[d
                   Omit to get news across all categories.
         limit: Number of items to return (1-10, default 5).
     """
-    limit = max(1, min(10, limit))
+    if isinstance(limit, int) and not isinstance(limit, bool):
+        limit = max(1, min(10, limit))
     items = await _get_client().get_news(category=category, limit=limit)
     return [truncate_news(item) for item in items]
 
 
 @mcp.tool()
+@_safe_tool
 async def get_news_recap(category: str, timeframe: str = "12h") -> dict:
     """Get an AI-generated news recap/summary for a specific category.
 
@@ -80,11 +113,12 @@ async def get_news_recap(category: str, timeframe: str = "12h") -> dict:
     """
     result = await _get_client().get_recap(category=category, timeframe=timeframe)
     if result is None:
-        return {"error": f"No recap found for category '{category}' with timeframe '{timeframe}'."}
+        return {"error": "No recap found for that category and timeframe."}
     return format_recap(result)
 
 
 @mcp.tool()
+@_safe_tool
 async def search_news(query: str, limit: int = 5) -> list[dict]:
     """Search curated crypto news by keyword.
 
@@ -95,12 +129,14 @@ async def search_news(query: str, limit: int = 5) -> list[dict]:
         query: Search keyword or phrase (e.g. 'ETF', 'SEC', 'Uniswap').
         limit: Number of results to return (1-5, default 5).
     """
-    limit = max(1, min(5, limit))
+    if isinstance(limit, int) and not isinstance(limit, bool):
+        limit = max(1, min(5, limit))
     items = await _get_client().get_news(keyword=query, limit=limit)
     return [truncate_news(item) for item in items]
 
 
 @mcp.tool()
+@_safe_tool
 async def get_categories() -> list[dict]:
     """List all available news categories with their recap timeframes.
 
@@ -112,6 +148,7 @@ async def get_categories() -> list[dict]:
 
 
 @mcp.tool()
+@_safe_tool
 async def get_news_item(id: str) -> dict:
     """Get a specific news item by its ID.
 
@@ -119,11 +156,11 @@ async def get_news_item(id: str) -> dict:
     headline, sentiment, categories, sources, and tweet URL.
 
     Args:
-        id: The news item ID (returned in results from get_latest_news or search_news).
+        id: The news item ID, a UUID (returned in results from get_latest_news or search_news).
     """
     item = await _get_client().get_news_by_id(id)
     if item is None:
-        return {"error": f"News item '{id}' not found."}
+        return {"error": "News item not found."}
     return truncate_news(item)
 
 
