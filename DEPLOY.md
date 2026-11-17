@@ -143,7 +143,7 @@ runtimes in this estate drifted from their repos in the first place.
 
 | Path (relative to `$APP_DIRECTORY`) | Why | Where the real copy lives |
 |---|---|---|
-| `.env` | Secrets. Loaded by the unit via `EnvironmentFile=`. Two keys: `GLORIA_API_TOKEN`, `AI_HUB_BASE_URL` | The box, mode 0664 today. Key names in `.env.example` |
+| `.env` | Secrets. Loaded by the unit via `EnvironmentFile=`. Two keys: `GLORIA_API_TOKEN` (must be an ai-hub `reader` role token, see README "Token requirements"), `AI_HUB_BASE_URL` | The box, mode 0664 today. Key names in `.env.example` |
 | `venv/` | The Python virtualenv the `ExecStart` runs. Built on the box | The box. Rebuilt by hand, never by a deploy |
 | `__pycache__/` | CPython bytecode cache | Regenerated automatically |
 
